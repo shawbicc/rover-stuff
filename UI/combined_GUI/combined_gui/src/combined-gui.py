@@ -10,8 +10,7 @@ from geometry_msgs.msg import Twist
 rospy.init_node("nav_pub", anonymous=True)
 wheel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
-# window = ttk.Window(themename='darkly')
-window = ttk.Window()
+window = ttk.Window(themename='darkly')
 window.title('Interplanetar GUI')
 window.geometry('800x400')
 
@@ -27,7 +26,7 @@ window.rowconfigure(4, weight=2)
 window.rowconfigure(5, weight=2)
 window.rowconfigure(6, weight=2)
 
-
+## GLOBAL VARIABLES
 global_font = tk.StringVar(value = 'Roboto Mono')
 background_color = tk.StringVar(value = 'orange')
 arming_status = tk.StringVar(value = 'disarmed')
@@ -36,15 +35,19 @@ arming_status = tk.StringVar(value = 'disarmed')
 arm_stat = tk.StringVar(value = 'Arming Status: --')
 ping = tk.StringVar(value = 'Ping: --')
 wheel_battery = tk.StringVar(value = 'Wheel Battery: --')
+drive_mode = tk.StringVar(value='Driving Mode: --')
 
 # wheel
 speed_text = tk.StringVar(value = 'Speed: --')
-speed = tk.DoubleVar(value = 0.4)
+speed = tk.DoubleVar(value = 0.7)
 odom = tk.StringVar(value = 'Odometry: --')
 
 # actions
 arm_button_text = tk.StringVar(value = 'Arm')
 need_delay = tk.StringVar(value = '1')
+
+# arm
+arm_pico_temp = tk.StringVar(value='Pico Temperature: --')
 
 def update_color(color):
     header_label["background"] = color
@@ -54,17 +57,17 @@ def update_color(color):
     arm_label["background"] = color
     actions_label["background"] = color
     
+
+
 def arm_switch():
     # arming
     if arming_status.get() == 'disarmed':
-        # add 5s delay if needed
+        # add 5s delay if needed ------------------------> Has the delay but not doing what it's supposed to in the meantime
         if need_delay.get() == '1':
             arming_status.set('arming')   
             arm_stat.set('Arming Status: Arming')
             update_color('yellow')
-            for i in range(5):
-                arm_button_text.set('Arming')
-                time.sleep(1)
+            time.sleep(5)
 
 		# start with stopped motion
         stop_moving()
@@ -107,26 +110,26 @@ def arm_switch():
 
 def move_forward():
     data = Twist()
-    data.linear.x = 0.7
+    data.linear.x = speed.get()
     data.angular.z = 0.0
     wheel_pub.publish(data)
 
 def move_backward():
     data = Twist()
-    data.linear.x = -0.7
+    data.linear.x = -1.0 * speed.get()
     data.angular.z = 0.0
     wheel_pub.publish(data)
 
 def move_left():
     data = Twist()
     data.linear.x = 0.0
-    data.angular.z = -0.7
+    data.angular.z = -1.0 * speed.get()
     wheel_pub.publish(data)
 
 def move_right():
     data = Twist()
     data.linear.x = 0.0
-    data.angular.z = 0.7
+    data.angular.z = speed.get()
     wheel_pub.publish(data)
     
 def stop_moving():
@@ -157,20 +160,24 @@ stats_label =  ttk.Label(stats_frame, text='Stats', borderwidth=2, relief="solid
 
 # stat labels (might have update issues)
 arm_status =  ttk.Label(stats_frame, textvariable=arm_stat, font=(global_font.get(), 10))
+drive_mode_status = ttk.Label(stats_frame, textvariable=drive_mode, font=(global_font.get(), 10))
 ping_count = ttk.Label(stats_frame, textvariable=ping, font=(global_font.get(), 10))
 wheel_bat = ttk.Label(stats_frame, textvariable=wheel_battery, font=(global_font.get(), 10))
 sensors = ttk.Label(stats_frame, text='Sensors:', font=(global_font.get(), 10))
-
+pico_temp = ttk.Label(stats_frame, textvariable=arm_pico_temp, font=(global_font.get(), 10))
 
 # packing
 stats_label.pack(expand=False, fill='x')
 arm_status.pack(expand=False, fill='x')
+drive_mode_status.pack(expand=False, fill='x')
 ping_count.pack(expand=False, fill='x')
 wheel_bat.pack(expand=False, fill='x')
 sensors.pack(expand=False, fill='x')
+pico_temp.pack(expand=False, fill='x')
 
 controls_notebook = ttk.Notebook(controls_frame)
 
+### Wheel Tab
 wheel_tab = ttk.Frame(controls_notebook)
 
 wheel_tab.rowconfigure(0, weight=1)
@@ -196,7 +203,6 @@ right = ttk.Button(wheel_tab, text="Right", bootstyle='success', state='disabled
 stop = ttk.Button(wheel_tab, text="Stop", bootstyle='success', state='disabled', command=stop_moving)
 
 speed_val = ttk.Label(wheel_tab, textvariable=speed_text, font=(global_font.get(), 10))
-# speed_slider = ttk.Scale(wheel_tab, command = lambda value: speed.set(f'Speed: {round(float(value), 2)}'), state='disabled')
 speed_slider = ttk.Scale(wheel_tab, command = update_speed, state='disabled')
 odom_text = ttk.Label(wheel_tab, textvariable=odom, font=(global_font.get(), 10))
 
@@ -209,8 +215,49 @@ speed_val.grid(row=0, column=4, columnspan=3, sticky='news')
 speed_slider.grid(row=1, column=4, columnspan=3, sticky='news')
 odom_text.grid(row=2, column=4, columnspan=3, rowspan=2, sticky='news')
 
+
+### Arm Tab
 arm_tab = ttk.Frame(controls_notebook)
 
+# arm_tab.rowconfigure(0, weight=1)
+# arm_tab.rowconfigure(1, weight=1)
+# arm_tab.rowconfigure(2, weight=1)
+# arm_tab.rowconfigure(3, weight=1)
+# arm_tab.rowconfigure(4, weight=1)
+# arm_tab.rowconfigure(5, weight=1)
+# arm_tab.rowconfigure(6, weight=1)
+# arm_tab.rowconfigure(7, weight=1)
+
+# arm_tab.columnconfigure(0, weight=1)
+# arm_tab.columnconfigure(1, weight=1)
+# arm_tab.columnconfigure(2, weight=1)
+# arm_tab.columnconfigure(3, weight=1)
+# arm_tab.columnconfigure(4, weight=1)
+# arm_tab.columnconfigure(5, weight=1)
+# arm_tab.columnconfigure(6, weight=1)
+# arm_tab.columnconfigure(7, weight=1)
+# arm_tab.columnconfigure(8, weight=1)
+# arm_tab.columnconfigure(9, weight=2)
+
+# joint_label = ttk.Label(arm_tab, text='Joint Angles', font=(global_font.get(), 12, 'bold'))
+# base_label = ttk.Label(arm_tab, text='Base: ', font=(global_font.get(), 10))
+# shoulder_label = ttk.Label(arm_tab, text='Shoulder: ', font=(global_font.get(), 10))
+# elbow_label = ttk.Label(arm_tab, text='Elbow: ', font=(global_font.get(), 10))
+# pitch_label = ttk.Label(arm_tab, text='Pitch: ', font=(global_font.get(), 10))
+# roll_label = ttk.Label(arm_tab, text='Roll: ', font=(global_font.get(), 10))
+# gripper_label = ttk.Label(arm_tab, text='Gripper: ', font=(global_font.get(), 10))
+
+# joint_label.grid(row=0, column=0, columnspan=8, sticky='news')
+# base_label.grid(row=1, column=0, sticky='news')
+# shoulder_label.grid(row=2, column=0, sticky='news')
+# elbow_label.grid(row=3, column=0, sticky='news')
+# pitch_label.grid(row=4, column=0, sticky='news')
+# roll_label.grid(row=5, column=0, sticky='news')
+# gripper_label.grid(row=6, column=0, sticky='news')
+
+
+
+### Science Tab
 science_tab = ttk.Frame(controls_notebook)
 
 controls_notebook.add(wheel_tab, text="Wheel")
@@ -221,7 +268,43 @@ controls_notebook.pack(expand=True, fill='both')
 
 terminal_label = ttk.Label(terminal_frame, text='Terminal', borderwidth=2, relief="solid", background=background_color.get(), anchor=tk.CENTER, font=(global_font.get(), 12, 'bold'))
 
+### Arm Frame
+arm_frame.rowconfigure(0, weight=1)
+arm_frame.rowconfigure(1, weight=1)
+arm_frame.rowconfigure(2, weight=1)
+arm_frame.rowconfigure(3, weight=1)
+arm_frame.rowconfigure(4, weight=1)
+arm_frame.rowconfigure(5, weight=1)
+arm_frame.rowconfigure(6, weight=1)
+arm_frame.rowconfigure(7, weight=1)
+
+arm_frame.columnconfigure(0, weight=1)
+arm_frame.columnconfigure(1, weight=1)
+arm_frame.columnconfigure(2, weight=1)
+arm_frame.columnconfigure(3, weight=3)
+
 arm_label = ttk.Label(arm_frame, text='Rover Arm', borderwidth=2, relief="solid", background=background_color.get(), anchor=tk.CENTER, font=(global_font.get(), 12, 'bold'))
+base_label = ttk.Label(arm_frame, text='Base: ', font=(global_font.get(), 10))
+shoulder_label = ttk.Label(arm_frame, text='Shoulder: ', font=(global_font.get(), 10))
+elbow_label = ttk.Label(arm_frame, text='Elbow: ', font=(global_font.get(), 10))
+pitch_label = ttk.Label(arm_frame, text='Pitch: ', font=(global_font.get(), 10))
+roll_label = ttk.Label(arm_frame, text='Roll: ', font=(global_font.get(), 10))
+gripper_label = ttk.Label(arm_frame, text='Gripper: ', font=(global_font.get(), 10))
+
+arm_label.grid(row=0, column=0, columnspan=8, sticky='news')
+base_label.grid(row=1, column=0, sticky='news')
+shoulder_label.grid(row=2, column=0, sticky='news')
+elbow_label.grid(row=3, column=0, sticky='news')
+pitch_label.grid(row=4, column=0, sticky='news')
+roll_label.grid(row=5, column=0, sticky='news')
+gripper_label.grid(row=6, column=0, sticky='news')
+
+
+
+
+
+
+
 
 actions_label = ttk.Label(actions_frame, text='Actions', borderwidth=2, relief="solid", background=background_color.get(), anchor=tk.CENTER, font=(global_font.get(), 12, 'bold'))
 
@@ -237,7 +320,6 @@ devicelist_label.pack(expand=False, fill='x')
 
 # controls_label.pack(expand=True, fill='both')
 terminal_label.pack(expand=False, fill='x')
-arm_label.pack(expand=False, fill='x')
 
 
 header_frame.grid(row=0, column=0, columnspan=3, sticky='news')
