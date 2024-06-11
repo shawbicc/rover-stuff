@@ -6,10 +6,9 @@ import ttkbootstrap as ttk
 import time
 import rospy
 from geometry_msgs.msg import Twist
+from std_msgs.msg import Float64MultiArray
 
-rospy.init_node("nav_pub", anonymous=True)
-wheel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-
+### Window
 window = ttk.Window(themename='darkly')
 window.title('Interplanetar GUI')
 window.geometry('800x400')
@@ -48,6 +47,15 @@ need_delay = tk.StringVar(value = '1')
 
 # arm
 arm_pico_temp = tk.StringVar(value='Pico Temperature: --')
+base_angle = tk.StringVar()
+shoulder_angle = tk.StringVar()
+elbow_angle = tk.StringVar()
+pitch_angle = tk.StringVar()
+roll_angle = tk.StringVar()
+gripper_angle = tk.StringVar()
+
+
+### FUCNTIONS
 
 def update_color(color):
     header_label["background"] = color
@@ -141,6 +149,93 @@ def stop_moving():
 def update_speed(value):
     speed.set(round(float(value), 2))
     speed_text.set("Speed: {}".format(round(float(value), 2)))
+
+def show_joint_angles(data: Float64MultiArray):
+    # base
+    if data.data[0]==800:
+        base_angle.set("Magnet not connected")
+
+    elif data.data[0]==801:
+        base_angle.set("Magnet Low")
+
+    elif data.data[0]==802:
+        base_angle.set("Magnet High")
+
+    elif data.data[0]==900:
+        base_angle.set("Encoder Not Connected")
+
+    else:
+        base_angle.set(str(data.data[0]))
+
+    # shoulder
+    if data.data[1]==800:
+        shoulder_angle.set("Magnet not connected")
+
+    elif data.data[1]==801:
+        shoulder_angle.set("Magnet Low")
+
+    elif data.data[1]==802:
+        shoulder_angle.set("Magnet High")
+    
+    elif data.data[1]==900:
+        shoulder_angle.set("Encoder Not Connected")
+
+    else:
+        shoulder_angle.set(str(data.data[1]))
+
+    # elbow
+    if data.data[2]==800:
+        elbow_angle.set("Magnet not connected")
+
+    elif data.data[2]==801:
+        elbow_angle.set("Magnet Low")
+
+    elif data.data[2]==802:
+        elbow_angle.set("Magnet High")
+
+    elif data.data[2]==900:
+        elbow_angle.set("Encoder Not Connected")
+
+    else:
+        elbow_angle.set(str(data.data[2]))
+
+    # pitch
+    if data.data[4]==800:
+        pitch_angle.set("Magnet not connected")
+
+    elif data.data[4]==801:
+        pitch_angle.set("Magnet Low")
+
+    elif data.data[4]==802:
+        pitch_angle.set("Magnet High")
+
+    elif data.data[4]==900:
+        pitch_angle.set("Encoder Not Connected")
+
+    else:
+        pitch_angle.set(str(data.data[4]))
+
+    # roll
+    if data.data[5]==800:
+        roll_angle.set("Magnet not connected")
+
+    elif data.data[5]==801:
+        roll_angle.set("Magnet Low")
+
+    elif data.data[5]==802:
+        roll_angle.set("Magnet High")
+
+    elif data.data[5]==900:
+        roll_angle.set("Encoder Not Connected")
+
+    else:
+        roll_angle.set(str(data.data[5]))
+
+    # temp
+    if data.data[6]==-1:
+        arm_pico_temp.set('Emergency stopped \nfrom pico BOOTSEL Button')
+    else:
+        arm_pico_temp.set("Pico Temperature: {}".format(data.data[6]))
 
 
 header_frame = ttk.Frame(window)
@@ -279,9 +374,8 @@ arm_frame.rowconfigure(6, weight=1)
 arm_frame.rowconfigure(7, weight=1)
 
 arm_frame.columnconfigure(0, weight=1)
-arm_frame.columnconfigure(1, weight=1)
+arm_frame.columnconfigure(1, weight=3)
 arm_frame.columnconfigure(2, weight=1)
-arm_frame.columnconfigure(3, weight=3)
 
 arm_label = ttk.Label(arm_frame, text='Rover Arm', borderwidth=2, relief="solid", background=background_color.get(), anchor=tk.CENTER, font=(global_font.get(), 12, 'bold'))
 base_label = ttk.Label(arm_frame, text='Base: ', font=(global_font.get(), 10))
@@ -291,7 +385,14 @@ pitch_label = ttk.Label(arm_frame, text='Pitch: ', font=(global_font.get(), 10))
 roll_label = ttk.Label(arm_frame, text='Roll: ', font=(global_font.get(), 10))
 gripper_label = ttk.Label(arm_frame, text='Gripper: ', font=(global_font.get(), 10))
 
-arm_label.grid(row=0, column=0, columnspan=8, sticky='news')
+base_value = ttk.Label(arm_frame, textvariable=base_angle, font=(global_font.get(), 10))
+shoulder_value = ttk.Label(arm_frame, textvariable=shoulder_angle, font=(global_font.get(), 10))
+elbow_value = ttk.Label(arm_frame, textvariable=elbow_angle, font=(global_font.get(), 10))
+pitch_value = ttk.Label(arm_frame, textvariable=pitch_angle, font=(global_font.get(), 10))
+roll_value = ttk.Label(arm_frame, textvariable=roll_angle, font=(global_font.get(), 10))
+gripper_value = ttk.Label(arm_frame, textvariable=gripper_angle, font=(global_font.get(), 10))
+
+arm_label.grid(row=0, column=0, columnspan=3, sticky='news')
 base_label.grid(row=1, column=0, sticky='news')
 shoulder_label.grid(row=2, column=0, sticky='news')
 elbow_label.grid(row=3, column=0, sticky='news')
@@ -299,7 +400,12 @@ pitch_label.grid(row=4, column=0, sticky='news')
 roll_label.grid(row=5, column=0, sticky='news')
 gripper_label.grid(row=6, column=0, sticky='news')
 
-
+base_value.grid(row=1, column=1, sticky='news')
+shoulder_value.grid(row=2, column=1, sticky='news')
+elbow_value.grid(row=3, column=1, sticky='news')
+pitch_value.grid(row=4, column=1, sticky='news')
+roll_value.grid(row=5, column=1, sticky='news')
+gripper_value.grid(row=6, column=1, sticky='news')
 
 
 
@@ -321,7 +427,7 @@ devicelist_label.pack(expand=False, fill='x')
 # controls_label.pack(expand=True, fill='both')
 terminal_label.pack(expand=False, fill='x')
 
-
+### Frames Packing
 header_frame.grid(row=0, column=0, columnspan=3, sticky='news')
 stats_frame.grid(row=1, column=0, rowspan=4, sticky='news')
 devicelist_frame.grid(row=5, column=0, rowspan=2, sticky='news')
@@ -329,6 +435,11 @@ controls_frame.grid(row=1, column=1, rowspan=4, sticky='news')
 terminal_frame.grid(row=5, column=1, rowspan=2, sticky='news')
 arm_frame.grid(row=1, column=2, rowspan=4, sticky='news')
 actions_frame.grid(row=5, column=2, rowspan=2, sticky='news')
+
+### ROS
+rospy.init_node("nav_pub", anonymous=True)
+wheel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+arm_sub = rospy.Subscriber('arm_status_notify', Float64MultiArray, show_joint_angles)
 
 window.mainloop()
 
