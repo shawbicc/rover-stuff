@@ -1,4 +1,4 @@
-/* software ---->
+ /* software ---->
  A -> left
  B -> right
 
@@ -28,12 +28,13 @@ ros::NodeHandle nh;
 // right
 #define BRPWM 3
 #define BLPWM 5
-#define B1ENLF 10
+//#define B1ENLF 10
+#define B1ENLF A3  // <---------- changed
 #define B2ENBR 2
 
 #define speed 200
 
-void moveBackward(){
+void moveBackward(int speed){
   // LF + LB
   analogWrite(A1ENRF, 255);
   analogWrite(A2ENBL, 255);
@@ -64,7 +65,7 @@ void moveForward(int spd){
 }
 
 
-void turnleft(int spd){
+void turnLeft(int spd){
    // LF + LB
   analogWrite(A1ENRF, 255);
   analogWrite(A2ENBL, 255);
@@ -80,7 +81,7 @@ void turnleft(int spd){
  
 }
 
-void turnright(int spd){
+void turnRight(int spd){
    // LF + LB
   analogWrite(A1ENRF, 255);
   analogWrite(A2ENBL, 255);
@@ -125,12 +126,12 @@ void velCallback(const geometry_msgs::Twist& vel){
 
   if (x==0 && z>0)
   {
-   turnright(z);
+   turnRight(z);
   }
  
    if (x==0 && z<0)
   {
-   turnleft(absolute_z);
+   turnLeft(absolute_z);
   }
 
   if (x>0 && z>0)
