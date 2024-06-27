@@ -116,31 +116,43 @@ def arm_switch():
         # change color
         update_color('red')
 
-def move_forward():
-    data = Twist()
-    data.linear.x = speed.get()
-    data.angular.z = 0.0
-    wheel_pub.publish(data)
+def move_forward(obj):
+    if arming_status.get() == 'armed':
+        data = Twist()
+        data.linear.x = speed.get()
+        data.angular.z = 0.0
+        wheel_pub.publish(data)
+    else:
+        rospy.logwarn("Not armed, command rejected")
 
-def move_backward():
-    data = Twist()
-    data.linear.x = -1.0 * speed.get()
-    data.angular.z = 0.0
-    wheel_pub.publish(data)
+def move_backward(obj):
+    if arming_status.get() == 'armed':
+        data = Twist()
+        data.linear.x = -1.0 * speed.get()
+        data.angular.z = 0.0
+        wheel_pub.publish(data)
+    else:
+        rospy.logwarn("Not armed, command rejected")
 
-def move_left():
-    data = Twist()
-    data.linear.x = 0.0
-    data.angular.z = -1.0 * speed.get()
-    wheel_pub.publish(data)
+def move_left(obj):
+    if arming_status.get() == 'armed':
+        data = Twist()
+        data.linear.x = 0.0
+        data.angular.z = -1.0 * speed.get()
+        wheel_pub.publish(data)
+    else:
+        rospy.logwarn("Not armed, command rejected")
 
-def move_right():
-    data = Twist()
-    data.linear.x = 0.0
-    data.angular.z = speed.get()
-    wheel_pub.publish(data)
+def move_right(obj):
+    if arming_status.get() == 'armed':
+        data = Twist()
+        data.linear.x = 0.0
+        data.angular.z = speed.get()
+        wheel_pub.publish(data)
+    else:
+        rospy.logwarn("Not armend, command rejected")
     
-def stop_moving():
+def stop_moving(obj):
     data = Twist()
     data.linear.x = 0.0
     data.angular.z = 0.0
@@ -291,16 +303,19 @@ wheel_tab.columnconfigure(5, weight=1)
 wheel_tab.columnconfigure(6, weight=1)
 wheel_tab.columnconfigure(7, weight=1)
 
-forward = ttk.Button(wheel_tab, text="Forward", bootstyle='success', state='disabled', command=move_forward)
-backward = ttk.Button(wheel_tab, text="Backward", bootstyle='success', state='disabled', command=move_backward)
-left = ttk.Button(wheel_tab, text="Left", bootstyle='success', state='disabled', command=move_left)
-right = ttk.Button(wheel_tab, text="Right", bootstyle='success', state='disabled', command=move_right)
-stop = ttk.Button(wheel_tab, text="Stop", bootstyle='success', state='disabled', command=stop_moving)
+# wheel widgets
+forward = ttk.Button(wheel_tab, text="Forward", bootstyle='success', state='disabled')
+backward = ttk.Button(wheel_tab, text="Backward", bootstyle='success', state='disabled')
+left = ttk.Button(wheel_tab, text="Left", bootstyle='success', state='disabled')
+right = ttk.Button(wheel_tab, text="Right", bootstyle='success', state='disabled')
+stop = ttk.Button(wheel_tab, text="Stop", bootstyle='success', state='disabled')
 
+# wheel labels
 speed_val = ttk.Label(wheel_tab, textvariable=speed_text, font=(global_font.get(), 10))
 speed_slider = ttk.Scale(wheel_tab, command = update_speed, state='disabled')
 odom_text = ttk.Label(wheel_tab, textvariable=odom, font=(global_font.get(), 10))
 
+# widget packing
 forward.grid(row=1, column=1, sticky='news')
 backward.grid(row=3, column=1, sticky='news')
 left.grid(row=2, column=0, sticky='news')
@@ -310,6 +325,18 @@ speed_val.grid(row=0, column=4, columnspan=3, sticky='news')
 speed_slider.grid(row=1, column=4, columnspan=3, sticky='news')
 odom_text.grid(row=2, column=4, columnspan=3, rowspan=2, sticky='news')
 
+# wheel funcitons binding
+forward.bind("<ButtonPress>", move_forward)
+forward.bind("<ButtonRelease>", stop_moving)
+
+backward.bind("<ButtonPress>", move_backward)
+backward.bind("<ButtonRelease>", stop_moving)
+
+left.bind("<ButtonPress>", move_left)
+left.bind("<ButtonRelease>", stop_moving)
+
+right.bind("<ButtonPress>", move_right)
+right.bind("<ButtonRelease>", stop_moving)
 
 ### Arm Tab
 arm_tab = ttk.Frame(controls_notebook)
