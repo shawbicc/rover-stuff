@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="port" default="/dev/ttyACM0" doc="Port for the pico"/>
+    <arg name="sim" default="true" doc="true is simulation or false if real robot"/>
+
+    <group unless="$(arg sim)">
+        <!-- <rosparam file="$(find prochesta_arm_motion)/config/controllers.yaml" command="load" ns="/" /> -->
+        <rosparam file="$(find prochesta_arm_motion)/config/joint_limits.yaml" command="load" ns="/" />
+
+        <include file="$(find prochesta_arm_motion)/launch/hw_and_rviz.launch" pass_all_args="true"/> 
+        <!-- Controllers needed for hardware -->
+        <include file="$(find prochesta_arm_moveit_config)/launch/ros_controllers.launch"/>
+    </group> 
+    <group if="$(arg sim)">
+        <include file="$(find prochesta_arm_moveit_config)/launch/demo_gazebo.launch" pass_all_args="true"/>
+        <!-- No need for controllers(already spawned in demo_gazebo) -->
+    </group>
+            
+    
+    <node name="servo_server" pkg="moveit_servo" type="servo_server" output="screen" respawn="false" respawn_delay="0">
+        <param name="parameter_ns" type="string" value=""/>
+        <rosparam file="$(find prochesta_arm_motion)/config/prochesta_simulated_config.yaml" command="load" ns="" />
+    </node>
+
+</launch>

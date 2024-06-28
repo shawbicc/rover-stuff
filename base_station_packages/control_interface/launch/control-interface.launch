@@ -1,0 +1,10 @@
+<launch>
+
+    <!-- Launch gui -->
+    <!-- <node name="combined_gui" pkg="control_interface" type="combined_gui.py" output="screen" required="true">
+    </node> -->
+
+    <!-- Launch joystick managers -->
+    <node name="joystick_manager" pkg="control_interface" type="joystick-manager.py" output="screen" required="true">
+    </node>
+</launch>

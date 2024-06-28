@@ -1,0 +1,9 @@
+<launch>
+    <!-- hardware agent for navigation arduino (rosserial) -->
+    <node name="joy_to_cmd_vel" pkg="prochesta_nav_rover" type="rosserial-nav-joystick-agent.py" output="screen" required="true">
+    </node>
+
+    <!-- hardware agent for arm pico -->
+    <node name="hw_agent" pkg="prochesta_arm_motion" type="hw_agent.py" output="screen" required="true">
+    </node> 
+</launch>

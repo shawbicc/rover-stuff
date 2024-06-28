@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- <rosparam command="load" ns="/arm" file="$(find prochesta_arm_motion)/config/joy_node_params.yaml"/> -->
+   
+    <node ns="/arm" name="joy_node" pkg="joy" type="joy_node"  output="screen" respawn="false" respawn_delay="0">
+        <rosparam param="dev">/dev/input/by-id/usb-Microntek_USB_Joystick-joystick</rosparam>
+    </node>
+   
+    <node name="forward_kinematics_joystick" pkg="prochesta_arm_motion" type="forward_kinematics_joystick.py" output="screen"/>
+    <node name="hw_agent" pkg="prochesta_arm_motion" type="hw_agent.py" output="screen"/>
+    
+</launch>

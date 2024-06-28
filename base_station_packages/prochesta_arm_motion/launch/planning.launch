@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="port" default="/dev/ttyACM0" doc="Port for the pico"/>
+
+    <include file="$(find prochesta_arm_motion)/launch/hw_and_rviz.launch" pass_all_args="true"/>
+
+    <!-- Launch controllers -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" respawn="false" respawn_delay="0" args="
+            update_joints_controller
+            arm_controller
+        " />
+
+</launch>

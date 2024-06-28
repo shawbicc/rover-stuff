@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="servo_server" pkg="moveit_servo" type="servo_server" output="screen" respawn="false" respawn_delay="0">
+        <param name="parameter_ns" type="string" value=""/>
+        <rosparam file="$(find prochesta_arm_motion)/config/prochesta_simulated_config.yaml" command="load" ns="" />
+    </node>
+</launch>

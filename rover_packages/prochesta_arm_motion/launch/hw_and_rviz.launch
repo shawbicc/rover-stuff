@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="port" default="/dev/ttyACM0" doc="Port for the pico"/>
+
+    <rosparam file="$(find prochesta_arm_motion)/config/controllers.yaml" command="load" ns="/" />
+    <rosparam file="$(find prochesta_arm_motion)/config/joint_limits.yaml" command="load" ns="/" />
+
+    <!-- MoveIt options -->
+    <arg name="pipeline" default="ompl" doc="Planning pipeline to use with MoveIt"/>
+
+    <!-- Launch moveit rviz with ros_controllers -->
+    <include file="$(find prochesta_arm_moveit_config)/launch/demo.launch" pass_all_args="true">
+        <arg name="moveit_controller_manager" value="ros_control" />
+    </include>
+
+    <arg name="urdf_file" default="$(find prochesta_arm)/urdf/prochesta_arm.urdf.xacro"/>
+    <arg name="gui" default="true" />
+
+    <param name="robot_description" textfile="$(arg urdf_file)" />
+    <param name="use_gui" value="$(arg gui)"/>
+
+    <!-- Hardware agent for communicating with pico -->
+    <node pkg="prochesta_arm_motion" type="hw_agent.py" name="hw_agent" output="screen" respawn="false" respawn_delay="0">
+        <param name="port" value="$(arg port)" />
+    </node>
+
+    <!-- Launch hardware interface -->
+    <node pkg="prochesta_arm_motion" type="prochesta_arm_hw_interface" name="prochesta_arm_hw_interface" output="screen" respawn="false" respawn_delay="0"  launch-prefix="bash -c 'sleep 0.5; $0 $@' "/>
+
+    <!-- <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/> -->
+    <!-- Robot state publisher for publishing robot-joint states from controller to rviz -->
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="state_publisher" output="screen" respawn="true" />
+</launch>

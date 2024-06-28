@@ -1,0 +1,277 @@
+#:kivy 2.3.0
+# teleop_GUI.kv
+
+
+############### CANVAS ############################
+BoxLayout:
+    orientation: 'vertical'
+    spacing: 10
+    padding: 10
+
+    canvas.before:
+        Color:
+            rgba: 0.97, 0.91, 0.85, 1  # F9E8D9
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    
+    Label:
+        text: 'Navigation GUI'
+        halign: 'center'
+        font_size: '30sp'
+        size_hint_y: None
+        height: '50sp'
+        color: 0.18, 0.19, 0.31, 1
+
+    BoxLayout:
+        orientation: 'horizontal'
+        spacing: 10
+
+        ############## WHEEL CONTROL #####################
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_x: 0.5
+
+            canvas.before:
+                Color:
+                    rgba: 0.96, 0.71, 0.53, 1  # #3B3486
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [10, 10, 10, 10]
+
+            Label:
+                text: 'Wheel Controller'
+                halign: 'center'
+                valign: 'middle'
+                font_size: '20sp'
+                size_hint_y: 0.2
+                height: '30sp'
+                color: 0.18, 0.19, 0.31, 1
+            ############ SPEED ADJUSTMENT SLIDER ################
+            BoxLayout:
+                orientation: 'horizontal'
+                Label:
+                    text: 'Speed'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    height: '30sp'
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    id: speed_slider
+                    min: 0
+                    max: 100
+                    value: 40
+                    on_value: app.speed_value_adjusted(self.value)
+
+            Label:
+                id:speed_values_field
+                text: 'Linear: 0 m/s\nAngular: 0 rad/s'
+                halign: 'center'
+                valign: 'middle'
+                font_size: '16sp'
+                size_hint_y: 0.2
+                height: '30sp'
+                color: 0.0, 0.0, 0.0, 1
+
+            GridLayout:
+                cols: 3
+                spacing: 10
+
+                ################## WHEEL BUTTONS #########################
+                Button:
+                    text: ' '
+                    size_hint: 1, 1
+                    background_color: 0, 0.8, 0, 0
+                Button:
+                    text: 'Forward'
+                    size_hint: 1, 1
+                    on_press: app.forward()
+                    background_color: 0.93, 0.45, 0.07, 1
+                Button:
+                    text: ' '
+                    size_hint: 1, 1
+                    background_color: 0, 0.8, 0, 0
+
+                Button:
+                    text: 'Turn Left'
+                    size_hint: 1, 1
+                    background_color: 0.93, 0.45, 0.07, 1
+                    on_press: app.left()
+                Button:
+                    text: 'Stop'
+                    size_hint: 1, 1
+                    background_color: 0.93, 0.45, 0.07, 1
+                    on_press: app.stop()
+                Button:
+                    text: 'Turn Right'
+                    size_hint: 1, 1
+                    background_color: 0.93, 0.45, 0.07, 1
+                    on_press: app.right()
+               
+                Button:
+                    text: ' '
+                    size_hint: 1, 1
+                    background_color: 0, 0.8, 0, 0
+                Button:
+                    text: 'Backward'
+                    size_hint: 1, 1
+                    on_press: app.backward()
+                    background_color: 0.93, 0.45, 0.07, 1
+                Button:
+                    text: ' '
+                    background_color: 0, 0.8, 0, 0
+
+                
+        ################## ARM CONTROL #########################
+        BoxLayout:
+            id:right_box_layout
+            orientation: 'vertical'
+            canvas.before:
+                Color:
+                    rgba: 0.96, 0.71, 0.53, 1  # #3B3486
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [10, 10, 10, 10]
+            Label:
+                text: 'Arm Controller'
+                halign: 'center'
+                valign: 'middle'
+                font_size: '20sp'
+                height: '30sp'
+                color: 0.18, 0.19, 0.31, 1
+
+            ############## JOINT-1 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-1'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 120
+                    value: 0
+                    on_value: app.arm_slider_changed(1, self.value)
+
+            ############## JOINT-2 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-2'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 180
+                    value: 0
+                    on_value: app.arm_slider_changed(2, self.value)
+
+            ############## JOINT-3 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-3'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 180
+                    value: 0
+                    on_value: app.arm_slider_changed(3, self.value)
+
+            ############## JOINT-4 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-4'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 180
+                    value: 0
+                    on_value: app.arm_slider_changed(4, self.value)
+
+            ############## JOINT-5 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-5'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 180
+                    value: 0
+                    on_value: app.arm_slider_changed(5, self.value)
+
+            ############## JOINT-6 CONTROL #####################
+            BoxLayout:
+                orientation: 'horizontal'
+                # size_hint_y: 0.15
+                Label:
+                    text: 'Joint-6'
+                    halign: 'center'
+                    valign: 'middle'
+                    font_size: '16sp'
+                    size_hint_x: 0.2
+                    color: 0.0, 0.0, 0.0, 1
+                Slider:
+                    min: 0
+                    max: 180
+                    value: 0
+                    on_value: app.arm_slider_changed(6, self.value)
+
+            ############ GRIPPER AND OTHERS ###################
+            BoxLayout:
+                orientation: 'horizontal'
+                Button:
+                    text: 'Open Gripper'
+                    on_press: app.open_gripper()
+                    background_color: 0.93, 0.45, 0.07, 1
+                Button:
+                    text: 'Close Gripper'
+                    on_press: app.close_gripper()
+                    background_color: 0.93, 0.45, 0.07, 1
+                Button:
+                    text: 'Rest position'
+                    on_press: app.rest_position()
+                    background_color: 0.93, 0.45, 0.07, 1
+                Button:
+                    text: '<Unassigned>'
+                    # on_press: 
+                    background_color: 0.93, 0.45, 0.07, 1
+        
+                
+    ############# FOOTER ######################
+    Image:
+        source: 'logo.png'
+        size_hint: None, None
+        size: '60sp', '60sp'
+        pos_hint: {'center_x': 0.5}
+
+    
