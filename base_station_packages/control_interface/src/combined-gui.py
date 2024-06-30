@@ -7,6 +7,7 @@ import time
 import rospy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Int16MultiArray
 
 ### Window
 window = ttk.Window(themename='darkly')
@@ -66,6 +67,56 @@ def update_color(color):
     actions_label["background"] = color
     
 
+def science_command(command: Int16MultiArray):
+    if arming_status.get() == 'armed':
+        scinece_command_pub = rospy.Publisher('/science_control', Int16MultiArray, queue_size=10)
+        scinece_command_pub.publish(command)
+        rospy.loginfo("Science command published: {}".format(command))
+    else:
+        rospy.logwarn("Science: Nor armed, command rejected.")
+
+### Science command functions
+
+def platform_up_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [1, 0, 0, 0, 0, 0]
+    science_command(command)
+
+def platform_down_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [-1, 0, 0, 0, 0, 0]
+    science_command(command)
+
+def drill_base_up_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, 1, 0, 0, 0, 0]
+    science_command(command)
+
+def drill_base_down_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, -1, 0, 0, 0, 0]
+    science_command(command)
+
+def drill_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, 0, 1, 0, 0, 0]
+    science_command(command)
+
+def scooper_open_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, 0, 0, 1, 0, 0]
+    science_command(command)
+
+def scooper_close_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, 0, 0, -1, 0, 0]
+    science_command(command)
+
+def science_stop_command(arg=None):
+    command = Int16MultiArray()
+    command.data = [0, 0, 0, 0, 0, 0]
+    science_command(command)
+
 
 def arm_switch():
     # arming
@@ -79,6 +130,7 @@ def arm_switch():
 
 		# start with stopped motion
         stop_moving()
+        science_stop_command()
 		
         # change arming status
         arming_status.set('armed')
@@ -86,6 +138,8 @@ def arm_switch():
         arm_button_text.set('Disarm')
         
         # enable the widgets
+        
+        # wheel
         forward["state"] = "normal"
         backward["state"] = "normal"
         left["state"] = "normal"
@@ -93,6 +147,15 @@ def arm_switch():
         stop["state"] = "normal"
         speed_slider["state"] = "normal"
         
+        # science
+        platform_up["state"] = "normal"
+        platform_down["state"] = "normal"
+        drill_base_up["state"] = "normal"
+        drill_base_down["state"] = "normal"
+        drill["state"] = "normal"
+        scooper_open["state"] = "normal"
+        scooper_close["state"] = "normal"
+
         # change color
         update_color('green')
 
@@ -100,19 +163,30 @@ def arm_switch():
     elif arming_status.get() == 'armed' or arming_status.get() == 'arming':
     	# stop moving
         stop_moving()
+        science_stop_command()
+
         # change arming status
         arming_status.set('disarmed')
         arm_stat.set('Arming Status: Disarmed')
         arm_button_text.set('Arm')
         
         # disable the widgets
+        # wheel
         forward["state"] = "disabled"
         backward["state"] = "disabled"
         left["state"] = "disabled"
         right["state"] = "disabled"
         stop["state"] = "disabled"
         speed_slider["state"] = "disabled"
-        
+        # science
+        platform_up["state"] = "disabled"
+        platform_down["state"] = "disabled"
+        drill_base_up["state"] = "disabled"
+        drill_base_down["state"] = "disabled"
+        drill["state"] = "disabled"
+        scooper_open["state"] = "disabled"
+        scooper_close["state"] = "disabled"
+
         # change color
         update_color('red')
 
@@ -387,6 +461,51 @@ arm_tab = ttk.Frame(controls_notebook)
 ### Science Tab
 science_tab = ttk.Frame(controls_notebook)
 
+### Science widgets
+platform_up = ttk.Button(science_tab, text="Platform Up", bootstyle='success', state='disabled')
+platform_down = ttk.Button(science_tab, text="Platform Down", bootstyle='success', state='disabled')
+drill_base_up = ttk.Button(science_tab, text="Drill Base Up", bootstyle='success', state='disabled')
+drill_base_down = ttk.Button(science_tab, text="Drill Base Down", bootstyle='success', state='disabled')
+drill = ttk.Button(science_tab, text="Drill", bootstyle='success', state='disabled')
+scooper_open = ttk.Button(science_tab, text="Scooper Open", bootstyle='success', state='disabled')
+scooper_close = ttk.Button(science_tab, text="Scooper Close", bootstyle='success', state='disabled')
+
+### science widget packing
+platform_up.pack()
+platform_down.pack()
+drill_base_up.pack()
+drill_base_down.pack()
+drill.pack()
+scooper_open.pack()
+scooper_close.pack()
+
+### scinece functions binding
+platform_up.bind("<ButtonPress>", platform_up_command)
+platform_up.bind("<ButtonRelease>", science_stop_command)
+
+platform_down.bind("<ButtonPress>", platform_down_command)
+platform_down.bind("<ButtonRelease>", science_stop_command)
+
+drill_base_up.bind("<ButtonPress>", drill_base_up_command)
+drill_base_up.bind("<ButtonRelease>", science_stop_command)
+
+drill_base_down.bind("<ButtonPress>", drill_base_down_command)
+drill_base_down.bind("<ButtonRelease>", science_stop_command)
+
+drill.bind("<ButtonPress>", drill_command)
+drill.bind("<ButtonRelease>", science_stop_command)
+
+drill.bind("<ButtonPress>", drill_command)
+drill.bind("<ButtonRelease>", science_stop_command)
+
+scooper_open.bind("<ButtonPress>", scooper_open_command)
+scooper_open.bind("<ButtonRelease>", science_stop_command)
+
+scooper_close.bind("<ButtonPress>", scooper_close_command)
+scooper_close.bind("<ButtonRelease>", science_stop_command)
+
+
+
 controls_notebook.add(wheel_tab, text="Wheel")
 controls_notebook.add(arm_tab, text="Arm")
 controls_notebook.add(science_tab, text="Science tools")
@@ -474,5 +593,6 @@ wheel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 arm_sub = rospy.Subscriber('arm_status_notify', Float64MultiArray, show_joint_angles)
 
 window.mainloop()
+
 
 
