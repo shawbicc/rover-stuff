@@ -1,0 +1,48 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webcam Feeds</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body>
+    <h1>Webcam Feeds</h1>
+    <div>
+        <h2>Camera 0</h2>
+        <img id="camera_0" src="" alt="Camera 0 Feed">
+    </div>
+    <div>
+        <h2>Camera 1</h2>
+        <img id="camera_1" src="" alt="Camera 1 Feed">
+    </div>
+    <div>
+        <h2>Camera 2</h2>
+        <img id="camera_2" src="" alt="Camera 2 Feed">
+    </div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port + '/video');
+
+        socket.on('camera_0_frame', function(msg) {
+            document.getElementById('camera_0').src = 'data:image/jpeg;base64,' + msg.data;
+        });
+
+        socket.on('camera_1_frame', function(msg) {
+            document.getElementById('camera_1').src = 'data:image/jpeg;base64,' + msg.data;
+        });
+
+        socket.on('camera_2_frame', function(msg) {
+            document.getElementById('camera_2').src = 'data:image/jpeg;base64,' + msg.data;
+        });
+
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+        });
+    </script>
+</body>
+</html>
